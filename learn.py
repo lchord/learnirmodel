@@ -3,14 +3,12 @@
 import numpy as np
 import sklearn
 import keras
-from sklearn import datasets
 from sklearn import datasets, linear_model
+from keras import optimizers
 from keras.models import Sequential
 from keras.layers import Dense
-from sklearn.ensemble import ExtraTreesRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
-from keras import optimizers
 
 import loadData
 
@@ -51,7 +49,7 @@ def get_data():
     # TODO xuruiqin
 
     X, y = loadData.rawData()
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, shuffle=True, random_state=32)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.12, shuffle=True, random_state=1)
     return X_train, y_train, X_test, y_test
 
 
@@ -59,9 +57,9 @@ def sklearn_model(X_train, y_train, X_test, y_test):
     """
     TODO build a model, and investigate the hyperparameters
     """
-    reg1 = ExtraTreesRegressor(n_estimators=32, random_state=0)
-    reg1.fit(X_train, y_train)
-    y_pred = reg1.predict(X_test)
+    lasso_model = linear_model.Lasso()
+    lasso_model.fit(X_train, y_train)
+    y_pred = lasso_model.predict(X_test)
     mse_sklearn = mean_squared_error(y_test, y_pred)
     r2s_sklearn = r2_score(y_test, y_pred)
     return mse_sklearn, r2s_sklearn
@@ -85,16 +83,15 @@ def keras_model(X_train, y_train, X_test, y_test):
 
 
 def learn(X_train, y_train, X_test, y_test):
-    sklearn_model(X_train, y_train, X_test, y_test)
-    keras_model(X_train, y_train, X_test, y_test)
+    mse_sklearn, r2s_sklearn = sklearn_model(X_train, y_train, X_test, y_test)
+    mse_keras, acc_keras = keras_model(X_train, y_train, X_test, y_test)
+    return mse_sklearn, r2s_sklearn, mse_keras, acc_keras
 
 
-def results(X_train, y_train, X_test, y_test):
+def results(mse_sklearn, r2s_sklearn, mse_keras, acc_keras):
     """
     TODO print out results and discuss them
     """
-    mse_sklearn, r2s_sklearn = sklearn_model(X_train, y_train, X_test, y_test)
-    mse_keras, acc_keras = keras_model(X_train, y_train, X_test, y_test)
     # Results
     print "\nResults:"
     print "Sklearn Model    Mean Squared Error: %.2f    R2_Score: %.2f" % (mse_sklearn, r2s_sklearn)
@@ -109,12 +106,8 @@ def results(X_train, y_train, X_test, y_test):
 
 
 print "IR project using ML and DL.\nPlease wait..."
-
-# X_train,y_train,X_test,y_test = get_test_data()
-# sklearn_model_test(X_train,y_train,X_test,y_test)
-
 X_train, y_train, X_test, y_test = get_data()
-
+mse_sklearn, r2s_sklearn, mse_keras, acc_keras = learn(X_train, y_train, X_test, y_test)
 # TODO
 # results
-results(X_train, y_train, X_test, y_test)
+results(mse_sklearn, r2s_sklearn, mse_keras, acc_keras)
